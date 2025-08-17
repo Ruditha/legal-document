@@ -43,6 +43,10 @@ export default function AnalysisScreen({ route, navigation }) {
         const blob = await imageResponse.blob();
         console.log('Blob created:', blob.type, blob.size);
 
+        if (blob.size === 0) {
+          throw new Error('Image file is empty or corrupted');
+        }
+
         // Ensure we have a valid filename with extension
         const fileExtension = imageUri.split('.').pop() || 'jpg';
         const filename = `document.${fileExtension}`;
