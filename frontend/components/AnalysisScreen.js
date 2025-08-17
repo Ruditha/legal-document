@@ -71,11 +71,22 @@ export default function AnalysisScreen({ route, navigation }) {
       }
     } else {
       // For React Native mobile platforms
-      const fileExtension = imageUri.split('.').pop() || 'jpg';
+      const fileExtension = imageUri.split('.').pop()?.toLowerCase() || 'jpg';
       const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
       const filename = `document.${fileExtension}`;
 
-      console.log('Processing mobile image:', { uri: imageUri, type: mimeType, name: filename });
+      console.log('Processing mobile image:', {
+        uri: imageUri,
+        type: mimeType,
+        name: filename,
+        extension: fileExtension
+      });
+
+      // Validate file extension
+      const allowedExtensions = ['jpg', 'jpeg', 'png', 'tiff', 'bmp'];
+      if (!allowedExtensions.includes(fileExtension)) {
+        throw new Error(`Unsupported file format: ${fileExtension}. Allowed: ${allowedExtensions.join(', ')}`);
+      }
 
       formData.append('file', {
         uri: imageUri,
