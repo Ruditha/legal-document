@@ -9,16 +9,15 @@ export default function AnalysisScreen({ route, navigation }) {
   const [isDemoMode, setIsDemoMode] = useState(false);
 
   // Backend URL configuration for different platforms
-  // Use your deployed Fly.dev backend for all platforms
+  const localIPBackend = 'http://192.168.1.37:8000';  // Your local network IP
   const productionBackendUrl = 'https://7557117bba064bf7985a75b0fe881f6a-131a3e002dd24b91ae8e78e17.fly.dev';
 
-  // Development vs Production URL
-  const backendUrl = __DEV__ ?
-    (Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000') :
-    productionBackendUrl;
+  // Choose backend: local IP for mobile testing, localhost for web dev, or production
+  const backendUrl = Platform.OS === 'web'
+    ? 'http://localhost:8000'  // Web development
+    : localIPBackend;  // Mobile devices on same network
 
-  // For testing with deployed backend in development, uncomment this:
-  const backendUrl = productionBackendUrl;
+  // For production builds, use: productionBackendUrl
 
   useEffect(() => {
     if (imageUri) {
