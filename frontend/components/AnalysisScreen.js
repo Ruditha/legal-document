@@ -44,9 +44,21 @@ export default function AnalysisScreen({ route, navigation }) {
         console.log('Blob created:', blob.type, blob.size);
 
         // Ensure we have a valid filename with extension
-        const filename = `document.${imageUri.split('.').pop() || 'jpg'}`;
-        formData.append('file', blob, filename);
-        console.log('FormData appended with filename:', filename);
+        const fileExtension = imageUri.split('.').pop() || 'jpg';
+        const filename = `document.${fileExtension}`;
+
+        // Create a proper File object for web
+        const file = new File([blob], filename, {
+          type: blob.type || `image/${fileExtension === 'jpg' ? 'jpeg' : fileExtension}`
+        });
+
+        formData.append('file', file);
+        console.log('FormData appended with File object:', {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          lastModified: file.lastModified
+        });
       } catch (error) {
         console.error('Error converting image for upload:', error);
         Alert.alert('Upload Error', 'Failed to prepare image for upload. Please try again.');
