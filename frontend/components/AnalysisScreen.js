@@ -140,24 +140,39 @@ export default function AnalysisScreen({ route, navigation }) {
       if (!response.ok) {
         let errorMessage = 'Failed to process document.';
         let responseText = '';
+        let responseData = null;
 
         try {
-          responseText = await response.text();
-          console.log('Error response body:', responseText);
+          // Clone the response to avoid consuming the body stream
+          const responseClone = response.clone();
+          responseText = await responseClone.text();
+          console.log('Raw error response body:', responseText);
 
-          // Try to parse as JSON first
-          const errorData = JSON.parse(responseText);
-          errorMessage = errorData.detail || errorData.message || errorMessage;
+          // Try to parse as JSON if we have content
+          if (responseText.trim()) {
+            try {
+              responseData = JSON.parse(responseText);
+              errorMessage = responseData.detail || responseData.message || errorMessage;
+              console.log('Parsed error data:', responseData);
+            } catch (parseError) {
+              console.log('Could not parse response as JSON:', parseError.message);
+              errorMessage = responseText;
+            }
+          } else {
+            console.log('Empty response body despite content-length header');
+            errorMessage = `HTTP ${response.status}: ${response.statusText} (empty response body)`;
+          }
         } catch (e) {
-          // If we can't parse as JSON, use the raw text or status
-          errorMessage = responseText || `HTTP ${response.status}: ${response.statusText}`;
+          console.error('Error reading response:', e);
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         }
 
         const errorDetails = {
           status: response.status,
           statusText: response.statusText,
           headers: Object.fromEntries(response.headers.entries()),
-          body: responseText
+          body: responseText,
+          parsedData: responseData
         };
 
         console.error('Backend error details:', JSON.stringify(errorDetails, null, 2));
