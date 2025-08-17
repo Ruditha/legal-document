@@ -152,21 +152,11 @@ export default function AnalysisScreen({ route, navigation }) {
       console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       console.log('Response ok:', response.ok);
 
-      // Read response body ONCE at the beginning - works for both success and error
-      let responseText = '';
-      try {
-        responseText = await response.text();
-        console.log('Raw response body:', responseText);
-      } catch (readError) {
-        console.error('Failed to read response body:', readError);
-        throw new Error('Could not read server response');
-      }
-
-      // Now handle success vs error based on status, using the already-read text
+      // Handle success and error without reading response body to avoid stream issues
       if (response.ok) {
-        // Success case - parse the text as JSON
+        // Success case - try to parse as JSON
         try {
-          const data = JSON.parse(responseText);
+          const data = await response.json();
           console.log('Success response data:', data);
 
           setSummary(data.summary || 'No summary available.');
@@ -182,34 +172,27 @@ export default function AnalysisScreen({ route, navigation }) {
           return; // Exit early on success
 
         } catch (parseError) {
-          console.error('Failed to parse success response as JSON:', parseError);
+          console.error('Failed to parse success response:', parseError);
           throw new Error('Invalid JSON response from server');
         }
       } else {
-        // Error case - we already have the response text
-        let errorMessage = 'Failed to process document.';
-        let errorDetails = {
+        // Error case - provide basic error info without reading body to avoid stream conflicts
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+
+        const errorDetails = {
           status: response.status,
           statusText: response.statusText,
           headers: Object.fromEntries(response.headers.entries()),
-          body: responseText
+          note: 'Body not read to avoid stream conflicts - check backend logs for details'
         };
 
-        if (responseText.trim()) {
-          try {
-            // Try to parse error response as JSON
-            const errorData = JSON.parse(responseText);
-            errorMessage = errorData.detail || errorData.message || errorMessage;
-            errorDetails.parsedData = errorData;
-            console.log('Parsed error data:', errorData);
-          } catch (jsonError) {
-            // If not JSON, use the text as error message
-            errorMessage = responseText;
-            console.log('Error response is not JSON, using as text');
-          }
-        } else {
-          errorMessage = `HTTP ${response.status}: ${response.statusText} (empty response)`;
-          console.log('Empty error response body');
+        // For common HTTP errors, provide more specific messages
+        if (response.status === 400) {
+          errorMessage = 'Bad Request - likely file format or validation error. Check that you\'re uploading a valid image file (PNG, JPG, JPEG).';
+        } else if (response.status === 404) {
+          errorMessage = 'Endpoint not found - check backend server configuration.';
+        } else if (response.status === 500) {
+          errorMessage = 'Internal server error - check backend logs for details.';
         }
 
         console.error('Backend error details:', JSON.stringify(errorDetails, null, 2));
