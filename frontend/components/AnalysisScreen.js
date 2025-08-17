@@ -76,7 +76,14 @@ export default function AnalysisScreen({ route, navigation }) {
         throw new Error(errorMessage);
       }
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error('Failed to parse response JSON:', parseError);
+        throw new Error('Invalid response format from server');
+      }
+
       setSummary(data.summary || 'No summary available.');
       setKeyPoints(data.key_points || ['No key points extracted.']);
 
