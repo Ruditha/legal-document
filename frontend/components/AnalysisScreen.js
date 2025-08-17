@@ -176,7 +176,7 @@ export default function AnalysisScreen({ route, navigation }) {
           throw new Error('Invalid response format from server');
         }
       } else {
-        // Error case - get error details
+        // Error case - read response body once and handle all parsing
         let errorMessage = 'Failed to process document.';
         let errorDetails = {
           status: response.status,
@@ -185,19 +185,30 @@ export default function AnalysisScreen({ route, navigation }) {
         };
 
         try {
-          const errorData = await response.json();
-          errorMessage = errorData.detail || errorData.message || errorMessage;
-          errorDetails.parsedData = errorData;
-          console.log('Error response data:', errorData);
-        } catch (parseError) {
-          // If JSON parsing fails, try text
-          try {
-            const errorText = await response.text();
-            errorMessage = errorText || errorMessage;
-            errorDetails.body = errorText;
-          } catch (textError) {
-            console.error('Could not read error response:', textError);
+          // Read response body as text first (this works for both JSON and plain text)
+          const responseText = await response.text();
+          console.log('Error response text:', responseText);
+
+          if (responseText.trim()) {
+            try {
+              // Try to parse as JSON
+              const errorData = JSON.parse(responseText);
+              errorMessage = errorData.detail || errorData.message || errorMessage;
+              errorDetails.parsedData = errorData;
+              console.log('Parsed error data:', errorData);
+            } catch (jsonError) {
+              // If not JSON, use the text as error message
+              errorMessage = responseText;
+              errorDetails.body = responseText;
+              console.log('Error response is not JSON, using as text');
+            }
+          } else {
+            errorMessage = `HTTP ${response.status}: ${response.statusText} (empty response)`;
+            console.log('Empty error response body');
           }
+        } catch (readError) {
+          console.error('Could not read error response at all:', readError);
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         }
 
         console.error('Backend error details:', JSON.stringify(errorDetails, null, 2));
