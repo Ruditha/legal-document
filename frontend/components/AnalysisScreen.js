@@ -133,6 +133,10 @@ export default function AnalysisScreen({ route, navigation }) {
         }
       }
 
+      console.log('Making request to:', `${backendUrl}/process_document`);
+      console.log('Request method: POST');
+      console.log('Request will include automatic multipart/form-data headers');
+
       const response = await fetch(`${backendUrl}/process_document`, {
         method: 'POST',
         body: formData,
@@ -140,8 +144,9 @@ export default function AnalysisScreen({ route, navigation }) {
         timeout: 30000, // 30 second timeout
       });
 
-      console.log('Response status:', response.status);
+      console.log('Response received - status:', response.status);
       console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      console.log('Response ok:', response.ok);
 
       if (!response.ok) {
         let errorMessage = 'Failed to process document.';
