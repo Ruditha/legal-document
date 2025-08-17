@@ -1,63 +1,52 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Platform, SafeAreaView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Platform, SafeAreaView, StyleSheet } from 'react-native';
 
 import HomeScreen from './components/HomeScreen';
 import AnalysisScreen from './components/AnalysisScreen';
 
-const Stack = createStackNavigator();
-
 export default function App() {
+  const [currentScreen, setCurrentScreen] = useState('Home');
+  const [imageUri, setImageUri] = useState(null);
+
+  const navigation = {
+    navigate: (screen, params = {}) => {
+      setCurrentScreen(screen);
+      if (params.imageUri) {
+        setImageUri(params.imageUri);
+      }
+    },
+    goBack: () => {
+      setCurrentScreen('Home');
+      setImageUri(null);
+    }
+  };
+
+  const renderScreen = () => {
+    switch (currentScreen) {
+      case 'Analysis':
+        return (
+          <AnalysisScreen 
+            route={{ params: { imageUri } }} 
+            navigation={navigation} 
+          />
+        );
+      default:
+        return <HomeScreen navigation={navigation} />;
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" backgroundColor="#fff" />
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName="Home"
-          screenOptions={{
-            headerStyle: {
-              backgroundColor: '#fff',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 3,
-              elevation: 3,
-            },
-            headerTintColor: '#333',
-            headerTitleStyle: {
-              fontWeight: 'bold',
-              fontSize: 18,
-            },
-            cardStyle: { backgroundColor: '#F8F7F4' },
-          }}
-        >
-          <Stack.Screen 
-            name="Home" 
-            component={HomeScreen} 
-            options={{ 
-              title: 'Legal Awareness App',
-              headerStyle: {
-                backgroundColor: '#007bff',
-              },
-              headerTintColor: '#fff',
-              headerTitleStyle: {
-                fontWeight: 'bold',
-                fontSize: 20,
-              },
-            }} 
-          />
-          <Stack.Screen 
-            name="Analysis" 
-            component={AnalysisScreen} 
-            options={{ 
-              title: 'Document Analysis',
-              headerBackTitleVisible: false,
-            }} 
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <StatusBar style="dark" backgroundColor="#007bff" />
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>
+          {currentScreen === 'Analysis' ? 'Document Analysis' : 'Legal Awareness App'}
+        </Text>
+      </View>
+      <View style={styles.content}>
+        {renderScreen()}
+      </View>
     </SafeAreaView>
   );
 }
@@ -65,7 +54,27 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F8F7F4',
     paddingTop: Platform.OS === 'android' ? 25 : 0,
+  },
+  header: {
+    backgroundColor: '#007bff',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+  },
+  content: {
+    flex: 1,
   },
 });
