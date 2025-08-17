@@ -148,34 +148,39 @@ export default function AnalysisScreen({ route, navigation }) {
       console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       console.log('Response ok:', response.ok);
 
+      // Read the response body once and handle both success and error cases
+      let responseText = '';
+      let responseData = null;
+
+      try {
+        responseText = await response.text();
+        console.log('Raw response body:', responseText);
+
+        // Try to parse as JSON
+        if (responseText.trim()) {
+          try {
+            responseData = JSON.parse(responseText);
+            console.log('Parsed response data:', responseData);
+          } catch (parseError) {
+            console.log('Could not parse response as JSON:', parseError.message);
+          }
+        } else {
+          console.log('Empty response body');
+        }
+      } catch (readError) {
+        console.error('Error reading response body:', readError);
+        throw new Error('Failed to read server response');
+      }
+
       if (!response.ok) {
         let errorMessage = 'Failed to process document.';
-        let responseText = '';
-        let responseData = null;
 
-        try {
-          // Clone the response to avoid consuming the body stream
-          const responseClone = response.clone();
-          responseText = await responseClone.text();
-          console.log('Raw error response body:', responseText);
-
-          // Try to parse as JSON if we have content
-          if (responseText.trim()) {
-            try {
-              responseData = JSON.parse(responseText);
-              errorMessage = responseData.detail || responseData.message || errorMessage;
-              console.log('Parsed error data:', responseData);
-            } catch (parseError) {
-              console.log('Could not parse response as JSON:', parseError.message);
-              errorMessage = responseText;
-            }
-          } else {
-            console.log('Empty response body despite content-length header');
-            errorMessage = `HTTP ${response.status}: ${response.statusText} (empty response body)`;
-          }
-        } catch (e) {
-          console.error('Error reading response:', e);
-          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        if (responseData) {
+          errorMessage = responseData.detail || responseData.message || errorMessage;
+        } else if (responseText.trim()) {
+          errorMessage = responseText;
+        } else {
+          errorMessage = `HTTP ${response.status}: ${response.statusText} (empty response body)`;
         }
 
         const errorDetails = {
@@ -191,13 +196,12 @@ export default function AnalysisScreen({ route, navigation }) {
         throw new Error(errorMessage);
       }
 
-      let data;
-      try {
-        data = await response.json();
-      } catch (parseError) {
-        console.error('Failed to parse response JSON:', parseError);
-        throw new Error('Invalid response format from server');
+      // Handle successful response
+      if (!responseData) {
+        throw new Error('Server returned empty response');
       }
+
+      const data = responseData;
 
       setSummary(data.summary || 'No summary available.');
       setKeyPoints(data.key_points || ['No key points extracted.']);
