@@ -152,7 +152,11 @@ export default function AnalysisScreen({ route, navigation }) {
       // Determine if it's a connection error or a backend error
       const isConnectionError = error.message.includes('Failed to fetch') ||
                                error.message.includes('Network request failed') ||
-                               error.message.includes('ERR_CONNECTION_REFUSED');
+                               error.message.includes('ERR_CONNECTION_REFUSED') ||
+                               error.message.includes('fetch');
+
+      // Check if it's a 400 error that might be due to backend configuration
+      const is400Error = error.message.includes('400') || error.message.includes('Bad Request');
 
       // Fallback to demo mode if backend connection fails
       console.log('Backend error detected, showing demo mode');
@@ -168,6 +172,17 @@ export default function AnalysisScreen({ route, navigation }) {
             '🔧 Check Python environment: Make sure Python 3.8+ is installed',
             '⚠️ This is demo mode - start backend for real AI analysis'
           ]);
+        } else if (is400Error) {
+          setSummary('⚠️ DEMO MODE: Since the backend is not properly configured or has validation issues, showing demo analysis instead. This legal document contains standard terms and conditions with key clauses around service delivery, payment terms, and liability limitations. Please review all sections carefully before signing.');
+          setKeyPoints([
+            '📋 Service Agreement: 12-month term with automatic renewal clause',
+            '💰 Payment Terms: Net 30 days with late payment penalties',
+            '⚖️ Liability Limitation: Damages limited to contract value',
+            '🔚 Termination: Either party may terminate with 30 days notice',
+            '🔒 Confidentiality: Non-disclosure obligations survive termination',
+            '🏛️ Dispute Resolution: Binding arbitration required for conflicts',
+            '⚠️ Demo content - start backend server for real AI analysis'
+          ]);
         } else {
           setSummary(`⚠️ BACKEND ERROR: ${error.message}. This might be due to invalid file format, server configuration, or API issues. Please check the backend logs for more details.`);
           setKeyPoints([
@@ -180,9 +195,11 @@ export default function AnalysisScreen({ route, navigation }) {
         }
 
         Alert.alert(
-          isConnectionError ? '🚫 Backend Not Running' : '⚠️ Backend Error',
+          isConnectionError ? '🚫 Backend Not Running' : is400Error ? '📋 Demo Mode' : '⚠️ Backend Error',
           isConnectionError
             ? 'The backend server is not running. Please start it and try again.'
+            : is400Error
+            ? 'Backend validation failed. Showing demo analysis instead.'
             : 'There was an error processing your document. Check the summary for details.',
           [{ text: 'OK', style: 'default' }]
         );
