@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "start": "node node_modules/expo/bin/cli.js start",
-    "android": "node node_modules/expo/bin/cli.js run:android",
-    "ios": "node node_modules/expo/bin/cli.js run:ios",
-    "web": "node node_modules/expo/bin/cli.js start --web",
+    "start": "node node_modules/expo/bin/cli start",
+    "android": "node node_modules/expo/bin/cli run:android",
+    "ios": "node node_modules/expo/bin/cli run:ios",
+    "web": "node node_modules/expo/bin/cli start --web",
     "web-dev": "webpack serve --config webpack.config.simple.js"
   },
   "dependencies": {
