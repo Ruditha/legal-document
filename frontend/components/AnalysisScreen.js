@@ -61,9 +61,7 @@ export default function AnalysisScreen({ route, navigation }) {
       const response = await fetch(`${backendUrl}/process_document`, {
         method: 'POST',
         body: formData,
-        headers: Platform.OS === 'web' ? {} : {
-          'Content-Type': 'multipart/form-data',
-        },
+        // Don't set Content-Type header - let browser/fetch set it automatically with boundary
         timeout: 30000, // 30 second timeout
       });
 
