@@ -51,11 +51,22 @@ export default function AnalysisScreen({ route, navigation }) {
         const fileExtension = imageUri.split('.').pop() || 'jpg';
         const filename = `document.${fileExtension}`;
 
-        // Ensure proper MIME type for the backend
-        const properMimeType = blob.type || (fileExtension === 'png' ? 'image/png' : 'image/jpeg');
+        // Ensure we have a valid file extension that backend accepts
+        const validExtensions = ['png', 'jpg', 'jpeg', 'tiff', 'bmp'];
+        const normalizedExtension = fileExtension === 'jpg' ? 'jpeg' : fileExtension;
 
-        // Create a proper File object for web with correct MIME type
-        const file = new File([blob], filename, {
+        if (!validExtensions.includes(normalizedExtension)) {
+          throw new Error(`Invalid file extension: ${fileExtension}. Allowed: ${validExtensions.join(', ')}`);
+        }
+
+        // Create filename that backend will accept
+        const validFilename = `document.${normalizedExtension}`;
+
+        // Ensure proper MIME type for the backend
+        const properMimeType = blob.type || (normalizedExtension === 'png' ? 'image/png' : 'image/jpeg');
+
+        // Create a proper File object for web with correct MIME type and filename
+        const file = new File([blob], validFilename, {
           type: properMimeType,
           lastModified: Date.now()
         });
@@ -65,7 +76,8 @@ export default function AnalysisScreen({ route, navigation }) {
           name: file.name,
           size: file.size,
           type: file.type,
-          extension: fileExtension
+          extension: normalizedExtension,
+          originalExtension: fileExtension
         });
       } catch (error) {
         console.error('Error converting image for upload:', error);
