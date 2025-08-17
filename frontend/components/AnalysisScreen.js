@@ -35,8 +35,11 @@ export default function AnalysisScreen({ route, navigation }) {
     // Handle different platforms for file upload
     if (Platform.OS === 'web') {
       try {
-        const response = await fetch(imageUri);
-        const blob = await response.blob();
+        const imageResponse = await fetch(imageUri);
+        if (!imageResponse.ok) {
+          throw new Error('Failed to fetch image');
+        }
+        const blob = await imageResponse.blob();
         formData.append('file', blob, `document.${imageUri.split('.').pop() || 'jpg'}`);
       } catch (error) {
         console.error('Error converting image for upload:', error);
