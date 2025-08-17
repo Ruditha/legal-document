@@ -117,23 +117,41 @@ export default function AnalysisScreen({ route, navigation }) {
     } catch (error) {
       console.error('Error processing document:', error);
 
+      // Determine if it's a connection error or a backend error
+      const isConnectionError = error.message.includes('Failed to fetch') ||
+                               error.message.includes('Network request failed') ||
+                               error.message.includes('ERR_CONNECTION_REFUSED');
+
       // Fallback to demo mode if backend connection fails
-      console.log('Backend connection failed, showing demo mode');
+      console.log('Backend error detected, showing demo mode');
       setIsDemoMode(true);
 
       setTimeout(() => {
-        setSummary('⚠️ BACKEND CONNECTION FAILED: This is demo content. Your BART + BERT backend at localhost:8000 is not reachable. Please ensure: 1) Backend server is running 2) No firewall blocking the connection 3) Correct API URL configuration.');
-        setKeyPoints([
-          '🔧 Check backend server: python main.py in backend folder',
-          '🌐 Verify backend URL: http://localhost:8000/health should work',
-          '🔥 Check firewall: Allow localhost:8000 connections',
-          '📱 For mobile: Use your computer\'s IP address instead of localhost',
-          '⚠️ This is demo mode - connect backend for real BART + BERT analysis'
-        ]);
+        if (isConnectionError) {
+          setSummary('⚠️ BACKEND NOT RUNNING: The backend server is not running on localhost:8000. To start the backend: 1) Navigate to backend folder 2) Run: uvicorn main:app --reload --host 0.0.0.0 --port 8000 3) Make sure all dependencies are installed (pip install -r requirements.txt)');
+          setKeyPoints([
+            '🚀 Start backend server: cd backend && uvicorn main:app --reload --host 0.0.0.0 --port 8000',
+            '📦 Install dependencies: cd backend && pip install -r requirements.txt',
+            '🌐 Verify backend URL: http://localhost:8000/health should return {"status": "healthy"}',
+            '🔧 Check Python environment: Make sure Python 3.8+ is installed',
+            '⚠️ This is demo mode - start backend for real AI analysis'
+          ]);
+        } else {
+          setSummary(`⚠️ BACKEND ERROR: ${error.message}. This might be due to invalid file format, server configuration, or API issues. Please check the backend logs for more details.`);
+          setKeyPoints([
+            '📄 Ensure image is a valid format (PNG, JPG, JPEG)',
+            '🔍 Check backend logs for detailed error information',
+            '🌐 Verify backend URL configuration and CORS settings',
+            '🔧 Check if all required dependencies are installed',
+            '⚠️ This is demo mode - fix backend issues for real analysis'
+          ]);
+        }
 
         Alert.alert(
-          '⚠️ Backend Connection Failed',
-          'Could not connect to your BART + BERT backend. Showing demo content instead. Check console for details.',
+          isConnectionError ? '🚫 Backend Not Running' : '⚠️ Backend Error',
+          isConnectionError
+            ? 'The backend server is not running. Please start it and try again.'
+            : 'There was an error processing your document. Check the summary for details.',
           [{ text: 'OK', style: 'default' }]
         );
         setLoading(false);
@@ -158,7 +176,7 @@ export default function AnalysisScreen({ route, navigation }) {
 
       {isDemoMode && (
         <View style={styles.demoIndicator}>
-          <Text style={styles.demoText}>⚠️ Demo Mode - Backend Offline</Text>
+          <Text style={styles.demoText}>���️ Demo Mode - Backend Offline</Text>
         </View>
       )}
 
