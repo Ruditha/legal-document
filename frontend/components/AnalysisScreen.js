@@ -141,15 +141,26 @@ export default function AnalysisScreen({ route, navigation }) {
         throw new Error('Backend server is not reachable. Please start the backend server first.');
       }
 
-      console.log('FormData entries:');
+      console.log('FormData entries being sent to backend:');
       for (let pair of formData.entries()) {
         const [key, value] = pair;
         if (value instanceof File || value instanceof Blob) {
-          console.log(key, `${value.constructor.name} - size: ${value.size}, type: ${value.type}`);
+          console.log(`${key}:`, {
+            name: value.name || 'unnamed',
+            size: value.size,
+            type: value.type,
+            constructor: value.constructor.name,
+            lastModified: value.lastModified || 'N/A'
+          });
         } else if (typeof value === 'object') {
-          console.log(key, JSON.stringify(value, null, 2));
+          console.log(`${key}:`, {
+            uri: value.uri,
+            name: value.name,
+            type: value.type,
+            platform: 'mobile'
+          });
         } else {
-          console.log(key, value);
+          console.log(`${key}:`, value);
         }
       }
 
