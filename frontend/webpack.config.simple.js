@@ -51,6 +51,10 @@ module.exports = {
   resolve: {
     alias: {
       'react-native$': 'react-native-web',
+      'react-native-gesture-handler': 'react-native-web/dist/exports/View',
+      'react-native-reanimated': 'react-native-web/dist/exports/View',
+      'react-native-safe-area-context': 'react-native-web/dist/exports/View',
+      'react-native-screens': 'react-native-web/dist/exports/View',
     },
     extensions: ['.web.js', '.js', '.jsx', '.json'],
     fallback: {
