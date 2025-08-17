@@ -114,10 +114,9 @@ export default function AnalysisScreen({ route, navigation }) {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Document Analysis</Text>
+      <View style={styles.backButtonContainer}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Text style={styles.backButtonText}>← Back to Home</Text>
         </TouchableOpacity>
       </View>
 
