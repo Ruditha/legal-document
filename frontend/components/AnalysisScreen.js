@@ -119,12 +119,14 @@ export default function AnalysisScreen({ route, navigation }) {
           errorMessage = responseText || `HTTP ${response.status}: ${response.statusText}`;
         }
 
-        console.error('Backend error details:', {
+        const errorDetails = {
           status: response.status,
           statusText: response.statusText,
           headers: Object.fromEntries(response.headers.entries()),
           body: responseText
-        });
+        };
+
+        console.error('Backend error details:', JSON.stringify(errorDetails, null, 2));
 
         throw new Error(errorMessage);
       }
