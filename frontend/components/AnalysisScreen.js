@@ -90,7 +90,14 @@ export default function AnalysisScreen({ route, navigation }) {
 
       console.log('FormData entries:');
       for (let pair of formData.entries()) {
-        console.log(pair[0], pair[1]);
+        const [key, value] = pair;
+        if (value instanceof File || value instanceof Blob) {
+          console.log(key, `${value.constructor.name} - size: ${value.size}, type: ${value.type}`);
+        } else if (typeof value === 'object') {
+          console.log(key, JSON.stringify(value, null, 2));
+        } else {
+          console.log(key, value);
+        }
       }
 
       const response = await fetch(`${backendUrl}/process_document`, {
