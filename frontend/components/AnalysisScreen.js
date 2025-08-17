@@ -225,13 +225,14 @@ export default function AnalysisScreen({ route, navigation }) {
       setIsDemoMode(true);
 
       setTimeout(() => {
-        if (isConnectionError) {
+        if (isConnectionError || error.message.includes('not reachable')) {
           setSummary('⚠️ BACKEND NOT RUNNING: The backend server is not running on localhost:8000. To start the backend: 1) Navigate to backend folder 2) Run: uvicorn main:app --reload --host 0.0.0.0 --port 8000 3) Make sure all dependencies are installed (pip install -r requirements.txt)');
           setKeyPoints([
             '🚀 Start backend server: cd backend && uvicorn main:app --reload --host 0.0.0.0 --port 8000',
             '📦 Install dependencies: cd backend && pip install -r requirements.txt',
             '🌐 Verify backend URL: http://localhost:8000/health should return {"status": "healthy"}',
             '🔧 Check Python environment: Make sure Python 3.8+ is installed',
+            '📋 Alternative: Use node backend/mock-server.js for testing',
             '⚠️ This is demo mode - start backend for real AI analysis'
           ]);
         } else if (is400Error) {
