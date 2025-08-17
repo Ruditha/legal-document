@@ -61,6 +61,7 @@ export default function AnalysisScreen({ route, navigation }) {
         headers: Platform.OS === 'web' ? {} : {
           'Content-Type': 'multipart/form-data',
         },
+        timeout: 30000, // 30 second timeout
       });
 
       if (!response.ok) {
