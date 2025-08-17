@@ -18,7 +18,7 @@ export default function AnalysisScreen({ route, navigation }) {
     productionBackendUrl;
 
   // For testing with deployed backend in development, uncomment this:
-  // const backendUrl = productionBackendUrl;
+  const backendUrl = productionBackendUrl;
 
   useEffect(() => {
     if (imageUri) {
