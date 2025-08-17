@@ -204,15 +204,6 @@ export default function AnalysisScreen({ route, navigation }) {
         throw new Error(errorMessage);
       }
 
-      setSummary(data.summary || 'No summary available.');
-      setKeyPoints(data.key_points || ['No key points extracted.']);
-
-      Alert.alert(
-        '✅ Analysis Complete',
-        `Document analyzed successfully using ${data.metadata?.processing_method || 'Local BART + BERT'}. Review the summary and key points below.`,
-        [{ text: 'Review Results', style: 'default' }]
-      );
-
     } catch (error) {
       console.error('Error processing document:', error);
 
