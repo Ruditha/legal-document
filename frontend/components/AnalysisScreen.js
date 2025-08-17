@@ -107,12 +107,18 @@ export default function AnalysisScreen({ route, navigation }) {
         });
         console.log('Health check response:', healthResponse.status);
 
-        if (!healthResponse.ok) {
-          console.warn('Backend health check failed, but continuing with upload...');
+        if (healthResponse.ok) {
+          const healthData = await healthResponse.text();
+          console.log('Health check data:', healthData);
+        } else {
+          console.warn('Backend health check failed with status:', healthResponse.status);
+          const errorText = await healthResponse.text();
+          console.warn('Health check error:', errorText);
         }
       } catch (healthError) {
         console.error('Backend health check failed:', healthError);
-        // Continue with upload attempt anyway
+        // This likely means the backend isn't running, so we should fail fast
+        throw new Error('Backend server is not reachable. Please start the backend server first.');
       }
 
       console.log('FormData entries:');
