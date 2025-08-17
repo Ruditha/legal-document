@@ -9,7 +9,15 @@ export default function AnalysisScreen({ route, navigation }) {
   const [isDemoMode, setIsDemoMode] = useState(false);
 
   // Backend URL configuration for different platforms
+  // For production/real devices, replace with your actual server IP or domain
+  // Example: 'https://yourdomain.com' or 'http://192.168.1.100:8000'
   const backendUrl = Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
+
+  // TODO: Replace with your production backend URL for real device deployment
+  // const productionBackendUrl = 'https://your-backend-domain.com';
+  // const backendUrl = __DEV__ ?
+  //   (Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000') :
+  //   productionBackendUrl;
 
   useEffect(() => {
     if (imageUri) {
@@ -268,7 +276,7 @@ export default function AnalysisScreen({ route, navigation }) {
           setSummary(`⚠️ BACKEND ERROR: ${error.message}. This might be due to invalid file format, server configuration, or API issues. Please check the backend logs for more details.`);
           setKeyPoints([
             '📄 Ensure image is a valid format (PNG, JPG, JPEG)',
-            '🔍 Check backend logs for detailed error information',
+            '�� Check backend logs for detailed error information',
             '🌐 Verify backend URL configuration and CORS settings',
             '🔧 Check if all required dependencies are installed',
             '⚠️ This is demo mode - fix backend issues for real analysis'
