@@ -87,13 +87,27 @@ export default function AnalysisScreen({ route, navigation }) {
 
       if (!response.ok) {
         let errorMessage = 'Failed to process document.';
+        let responseText = '';
+
         try {
-          const errorData = await response.json();
-          errorMessage = errorData.detail || errorMessage;
+          responseText = await response.text();
+          console.log('Error response body:', responseText);
+
+          // Try to parse as JSON first
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.detail || errorData.message || errorMessage;
         } catch (e) {
-          // If we can't parse error response, use generic message
-          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          // If we can't parse as JSON, use the raw text or status
+          errorMessage = responseText || `HTTP ${response.status}: ${response.statusText}`;
         }
+
+        console.error('Backend error details:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          body: responseText
+        });
+
         throw new Error(errorMessage);
       }
 
@@ -176,7 +190,7 @@ export default function AnalysisScreen({ route, navigation }) {
 
       {isDemoMode && (
         <View style={styles.demoIndicator}>
-          <Text style={styles.demoText}>���️ Demo Mode - Backend Offline</Text>
+          <Text style={styles.demoText}>⚠️ Demo Mode - Backend Offline</Text>
         </View>
       )}
 
