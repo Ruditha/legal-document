@@ -35,12 +35,18 @@ export default function AnalysisScreen({ route, navigation }) {
     // Handle different platforms for file upload
     if (Platform.OS === 'web') {
       try {
+        console.log('Processing web image:', imageUri);
         const imageResponse = await fetch(imageUri);
         if (!imageResponse.ok) {
           throw new Error('Failed to fetch image');
         }
         const blob = await imageResponse.blob();
-        formData.append('file', blob, `document.${imageUri.split('.').pop() || 'jpg'}`);
+        console.log('Blob created:', blob.type, blob.size);
+
+        // Ensure we have a valid filename with extension
+        const filename = `document.${imageUri.split('.').pop() || 'jpg'}`;
+        formData.append('file', blob, filename);
+        console.log('FormData appended with filename:', filename);
       } catch (error) {
         console.error('Error converting image for upload:', error);
         Alert.alert('Upload Error', 'Failed to prepare image for upload. Please try again.');
@@ -48,10 +54,17 @@ export default function AnalysisScreen({ route, navigation }) {
         return;
       }
     } else {
+      // For React Native mobile platforms
+      const fileExtension = imageUri.split('.').pop() || 'jpg';
+      const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
+      const filename = `document.${fileExtension}`;
+
+      console.log('Processing mobile image:', { uri: imageUri, type: mimeType, name: filename });
+
       formData.append('file', {
         uri: imageUri,
-        name: `document.${imageUri.split('.').pop() || 'jpg'}`,
-        type: `image/${imageUri.split('.').pop() || 'jpeg'}`,
+        name: filename,
+        type: mimeType,
       });
     }
 
