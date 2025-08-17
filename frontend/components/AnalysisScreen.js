@@ -152,11 +152,21 @@ export default function AnalysisScreen({ route, navigation }) {
       console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       console.log('Response ok:', response.ok);
 
-      // Handle response based on status first
+      // Read response body ONCE at the beginning - works for both success and error
+      let responseText = '';
+      try {
+        responseText = await response.text();
+        console.log('Raw response body:', responseText);
+      } catch (readError) {
+        console.error('Failed to read response body:', readError);
+        throw new Error('Could not read server response');
+      }
+
+      // Now handle success vs error based on status, using the already-read text
       if (response.ok) {
-        // Success case - parse JSON
+        // Success case - parse the text as JSON
         try {
-          const data = await response.json();
+          const data = JSON.parse(responseText);
           console.log('Success response data:', data);
 
           setSummary(data.summary || 'No summary available.');
@@ -172,43 +182,34 @@ export default function AnalysisScreen({ route, navigation }) {
           return; // Exit early on success
 
         } catch (parseError) {
-          console.error('Failed to parse success response:', parseError);
-          throw new Error('Invalid response format from server');
+          console.error('Failed to parse success response as JSON:', parseError);
+          throw new Error('Invalid JSON response from server');
         }
       } else {
-        // Error case - read response body once and handle all parsing
+        // Error case - we already have the response text
         let errorMessage = 'Failed to process document.';
         let errorDetails = {
           status: response.status,
           statusText: response.statusText,
-          headers: Object.fromEntries(response.headers.entries())
+          headers: Object.fromEntries(response.headers.entries()),
+          body: responseText
         };
 
-        try {
-          // Read response body as text first (this works for both JSON and plain text)
-          const responseText = await response.text();
-          console.log('Error response text:', responseText);
-
-          if (responseText.trim()) {
-            try {
-              // Try to parse as JSON
-              const errorData = JSON.parse(responseText);
-              errorMessage = errorData.detail || errorData.message || errorMessage;
-              errorDetails.parsedData = errorData;
-              console.log('Parsed error data:', errorData);
-            } catch (jsonError) {
-              // If not JSON, use the text as error message
-              errorMessage = responseText;
-              errorDetails.body = responseText;
-              console.log('Error response is not JSON, using as text');
-            }
-          } else {
-            errorMessage = `HTTP ${response.status}: ${response.statusText} (empty response)`;
-            console.log('Empty error response body');
+        if (responseText.trim()) {
+          try {
+            // Try to parse error response as JSON
+            const errorData = JSON.parse(responseText);
+            errorMessage = errorData.detail || errorData.message || errorMessage;
+            errorDetails.parsedData = errorData;
+            console.log('Parsed error data:', errorData);
+          } catch (jsonError) {
+            // If not JSON, use the text as error message
+            errorMessage = responseText;
+            console.log('Error response is not JSON, using as text');
           }
-        } catch (readError) {
-          console.error('Could not read error response at all:', readError);
-          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        } else {
+          errorMessage = `HTTP ${response.status}: ${response.statusText} (empty response)`;
+          console.log('Empty error response body');
         }
 
         console.error('Backend error details:', JSON.stringify(errorDetails, null, 2));
