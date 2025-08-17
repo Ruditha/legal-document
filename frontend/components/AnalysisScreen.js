@@ -51,9 +51,13 @@ export default function AnalysisScreen({ route, navigation }) {
         const fileExtension = imageUri.split('.').pop() || 'jpg';
         const filename = `document.${fileExtension}`;
 
-        // Create a proper File object for web
+        // Ensure proper MIME type for the backend
+        const properMimeType = blob.type || (fileExtension === 'png' ? 'image/png' : 'image/jpeg');
+
+        // Create a proper File object for web with correct MIME type
         const file = new File([blob], filename, {
-          type: blob.type || `image/${fileExtension === 'jpg' ? 'jpeg' : fileExtension}`
+          type: properMimeType,
+          lastModified: Date.now()
         });
 
         formData.append('file', file);
@@ -61,7 +65,7 @@ export default function AnalysisScreen({ route, navigation }) {
           name: file.name,
           size: file.size,
           type: file.type,
-          lastModified: file.lastModified
+          extension: fileExtension
         });
       } catch (error) {
         console.error('Error converting image for upload:', error);
