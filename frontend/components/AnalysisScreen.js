@@ -70,6 +70,24 @@ export default function AnalysisScreen({ route, navigation }) {
 
     try {
       console.log('Connecting to BART + BERT backend at:', backendUrl);
+
+      // First, test if the backend is reachable
+      try {
+        console.log('Testing backend connectivity...');
+        const healthResponse = await fetch(`${backendUrl}/health`, {
+          method: 'GET',
+          timeout: 5000,
+        });
+        console.log('Health check response:', healthResponse.status);
+
+        if (!healthResponse.ok) {
+          console.warn('Backend health check failed, but continuing with upload...');
+        }
+      } catch (healthError) {
+        console.error('Backend health check failed:', healthError);
+        // Continue with upload attempt anyway
+      }
+
       console.log('FormData entries:');
       for (let pair of formData.entries()) {
         console.log(pair[0], pair[1]);
