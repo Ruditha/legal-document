@@ -152,60 +152,57 @@ export default function AnalysisScreen({ route, navigation }) {
       console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       console.log('Response ok:', response.ok);
 
-      // Read the response body once and handle both success and error cases
-      let responseText = '';
-      let responseData = null;
+      // Handle response based on status first
+      if (response.ok) {
+        // Success case - parse JSON
+        try {
+          const data = await response.json();
+          console.log('Success response data:', data);
 
-      try {
-        responseText = await response.text();
-        console.log('Raw response body:', responseText);
+          setSummary(data.summary || 'No summary available.');
+          setKeyPoints(data.key_points || ['No key points extracted.']);
 
-        // Try to parse as JSON
-        if (responseText.trim()) {
-          try {
-            responseData = JSON.parse(responseText);
-            console.log('Parsed response data:', responseData);
-          } catch (parseError) {
-            console.log('Could not parse response as JSON:', parseError.message);
-          }
-        } else {
-          console.log('Empty response body');
+          Alert.alert(
+            '✅ Analysis Complete',
+            `Document analyzed successfully using ${data.metadata?.processing_method || 'Local BART + BERT'}. Review the summary and key points below.`,
+            [{ text: 'Review Results', style: 'default' }]
+          );
+
+          setLoading(false);
+          return; // Exit early on success
+
+        } catch (parseError) {
+          console.error('Failed to parse success response:', parseError);
+          throw new Error('Invalid response format from server');
         }
-      } catch (readError) {
-        console.error('Error reading response body:', readError);
-        throw new Error('Failed to read server response');
-      }
-
-      if (!response.ok) {
+      } else {
+        // Error case - get error details
         let errorMessage = 'Failed to process document.';
-
-        if (responseData) {
-          errorMessage = responseData.detail || responseData.message || errorMessage;
-        } else if (responseText.trim()) {
-          errorMessage = responseText;
-        } else {
-          errorMessage = `HTTP ${response.status}: ${response.statusText} (empty response body)`;
-        }
-
-        const errorDetails = {
+        let errorDetails = {
           status: response.status,
           statusText: response.statusText,
-          headers: Object.fromEntries(response.headers.entries()),
-          body: responseText,
-          parsedData: responseData
+          headers: Object.fromEntries(response.headers.entries())
         };
 
-        console.error('Backend error details:', JSON.stringify(errorDetails, null, 2));
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+          errorDetails.parsedData = errorData;
+          console.log('Error response data:', errorData);
+        } catch (parseError) {
+          // If JSON parsing fails, try text
+          try {
+            const errorText = await response.text();
+            errorMessage = errorText || errorMessage;
+            errorDetails.body = errorText;
+          } catch (textError) {
+            console.error('Could not read error response:', textError);
+          }
+        }
 
+        console.error('Backend error details:', JSON.stringify(errorDetails, null, 2));
         throw new Error(errorMessage);
       }
-
-      // Handle successful response
-      if (!responseData) {
-        throw new Error('Server returned empty response');
-      }
-
-      const data = responseData;
 
       setSummary(data.summary || 'No summary available.');
       setKeyPoints(data.key_points || ['No key points extracted.']);
