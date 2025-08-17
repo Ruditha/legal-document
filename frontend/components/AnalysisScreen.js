@@ -70,6 +70,10 @@ export default function AnalysisScreen({ route, navigation }) {
 
     try {
       console.log('Connecting to BART + BERT backend at:', backendUrl);
+      console.log('FormData entries:');
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+      }
 
       const response = await fetch(`${backendUrl}/process_document`, {
         method: 'POST',
@@ -77,6 +81,9 @@ export default function AnalysisScreen({ route, navigation }) {
         // Don't set Content-Type header - let browser/fetch set it automatically with boundary
         timeout: 30000, // 30 second timeout
       });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
         let errorMessage = 'Failed to process document.';
