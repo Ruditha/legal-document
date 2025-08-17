@@ -182,15 +182,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F7F4',
   },
   backButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: '#f0f0f0',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    backgroundColor: '#007bff',
     borderRadius: 8,
+    alignSelf: 'flex-start',
   },
   backButtonText: {
     fontSize: 16,
-    color: '#007bff',
-    fontWeight: '500',
+    color: '#fff',
+    fontWeight: '600',
   },
   demoIndicator: {
     backgroundColor: '#ff9800',
