@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal Awareness App</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        #root {
+            display: flex;
+            flex: 1;
+            min-height: 100vh;
+        }
+    </style>
+    <script>
+        // Enhanced error handling for webpack dev server
+        window.addEventListener('error', function(e) {
+            console.error('Global error caught:', e.error || e.message || e);
+        });
+
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Unhandled promise rejection:', e.reason);
+        });
+
+        // Override webpack's hot reload error handler to provide better error messages
+        if (module && module.hot) {
+            module.hot.accept();
+        }
+    </script>
+</head>
+<body>
+    <div id="root"></div>
+</body>
+</html>
